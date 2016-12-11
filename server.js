@@ -29,10 +29,31 @@ app.post('/webhook/', function (req, res) {
         sendGenericMessage(sender)
         continue
       }
-      axios.get('http://api.openweathermap.org/data/2.5/weather?q=' + text + '&APPID=7fee5476cbd1705fb181c28e20c473b7').then(function (res) {
-          console.log(res.data.main.temp)
-          sendTextMessage(sender, res.data.main.temp - 273)
-    }
+      app.post('/webhook/', function (req, res) {
+        let messaging_events = req.body.entry[0].messaging
+        for (let i = 0; i < messaging_events.length; i++) {
+          let event = req.body.entry[0].messaging[i]
+          let sender = event.sender.id
+          if (event.message && event.message.text) {
+            let text = event.message.text
+            if (text === 'Generic') {
+              sendGenericMessage(sender)
+              continue
+            }
+            // sendTextMessage(sender, 'Text received, echo: ' + text.substring(0, 200))
+              axios.get('http://api.openweathermap.org/data/2.5/weather?q=' + text + '&APPID=7fee5476cbd1705fb181c28e20c473b7').then(function (res) {
+                console.log(res.data.main.temp)
+                sendTextMessage(sender, res.data.main.temp - 273)
+              })
+          }
+          if (event.postback) {
+            let text = JSON.stringify(event.postback)
+            sendTextMessage(sender, 'Postback received: ' + text.substring(0, 200), token)
+            continue
+          }
+        }
+        res.sendStatus(200)
+      })
     if (event.postback) {
       let text = JSON.stringify(event.postback)
       sendTextMessage(sender, 'Postback received: ' + text.substring(0, 200), token)
