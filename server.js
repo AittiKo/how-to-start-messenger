@@ -4,7 +4,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const request = require('request')
 const app = express()
-const token = 'key'
+const axios = require('axios')
+const token = 'EAAKqxwZAYQJcBAOjdHTDsZA4vm0qHITepO3dQ7k1tXZAsGToqiXqKD6vSFzhkJ71ovtWsrajP1olYHZADnZBX9QbIuzh2UQsTzLRdgNVTuGYZBZBl1XhbcfZBCZAIKX8KNfnToSCNz8K4KlwdZCrBsVzCKpERnUUJw3IgAfq7yCvl1zAZDZD'
 app.set('port', (process.env.PORT || 5000))
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
@@ -12,7 +13,7 @@ app.get('/', function (req, res) {
   res.send('test test')
 })
 app.get('/webhook/', function (req, res) {
-  if (req.query['hub.verify_token'] === '') {
+  if (req.query['hub.verify_token'] === 'kokofinal') {
     res.send(req.query['hub.challenge'])
   }
   res.send('Error, wrong token')
@@ -28,7 +29,9 @@ app.post('/webhook/', function (req, res) {
         sendGenericMessage(sender)
         continue
       }
-      sendTextMessage(sender, 'Text received, echo: ' + text.substring(0, 200))
+      axios.get('http://api.openweathermap.org/data/2.5/weather?q=' + text + '&APPID=7fee5476cbd1705fb181c28e20c473b7').then(function (res) {
+          console.log(res.data.main.temp)
+          sendTextMessage(sender, res.data.main.temp - 273)
     }
     if (event.postback) {
       let text = JSON.stringify(event.postback)
